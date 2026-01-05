@@ -254,5 +254,5 @@ querys
 select _ from transactions
 select _ from usuarios
 
-
-requirements
+https://fastapi-capv1-production.up.railway.app/docs
+https://front-cap-nine.vercel.app/transactions
