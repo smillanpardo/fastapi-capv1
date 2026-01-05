@@ -253,3 +253,6 @@ dbonansea@covalto.com (APROBADOR) - ap-002
 querys
 select _ from transactions
 select _ from usuarios
+
+
+requirements
