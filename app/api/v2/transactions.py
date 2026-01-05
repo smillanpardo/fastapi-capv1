@@ -1,7 +1,3 @@
-"""
-API v2 de Transacciones con autenticación JWT y reference autogenerado.
-Versión empresarial con validaciones adicionales y seguridad mejorada.
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from schemas.transaction import TransactionCreateV2, TransactionResponse, MessageResponse
@@ -25,7 +21,7 @@ api_router = APIRouter(tags=["v2 - Transactions (JWT + Auto-Reference)"])
     "/transactions",
     response_model=TransactionResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="🔐 Crear transacción (v2 - JWT + Reference Auto)",
+    summary="Crear transacción (v2 - JWT + Reference Auto)",
     description="Crea una nueva transacción con autenticación JWT. La referencia se genera automáticamente."
 )
 async def crear_transaccion_v2(
@@ -33,31 +29,18 @@ async def crear_transaccion_v2(
     current_user = Depends(require_operador_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Autenticación JWT real validando contra BD
-    - ✅ Reference autogenerado (TRX-001, TRX-002, etc.)
-    - ✅ Validación de rol desde la BD
-    
-    ## Requiere:
-    - Token JWT válido en header `Authorization: Bearer <token>`
-    - Usuario con rol OPERADOR en la BD
-    """
-    # Generar reference automáticamente
+
     reference = ReferenceService.generar_siguiente_reference(db)
     
-    # Crear objeto con reference
     transaccion_completa = TransactionCreate(
         reference=reference,
         amount=transaccion.amount,
         currency=transaccion.currency
     )
     
-    # Usar user_id (op-001, ap-001) para trazabilidad
     user_id = current_user.user_id
     user_role = current_user.role.value
     
-    # Crear la transacción
     transaction = TransactionService.crear_transaccion(
         db, transaccion_completa, user_id, user_role
     )
@@ -68,7 +51,7 @@ async def crear_transaccion_v2(
 @api_router.post(
     "/transactions/{transaction_id}/submit",
     response_model=MessageResponse,
-    summary="🔐 Enviar a aprobación (v2 - JWT)",
+    summary="enviar a aprobación (v2 - JWT)",
     description="Envía una transacción a aprobación con autenticación JWT."
 )
 async def enviar_a_aprobacion_v2(
@@ -76,10 +59,7 @@ async def enviar_a_aprobacion_v2(
     current_user = Depends(require_operador_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Validación JWT real
-    """
+
     user_role = current_user.role.value
     transaction = TransactionService.enviar_a_aprobacion(db, transaction_id, user_role)
     
@@ -93,7 +73,7 @@ async def enviar_a_aprobacion_v2(
 @api_router.post(
     "/transactions/{transaction_id}/approve",
     response_model=MessageResponse,
-    summary="🔐 Aprobar transacción (v2 - JWT)",
+    summary="Aprobar transacción (v2 - JWT)",
     description="Aprueba una transacción con autenticación JWT."
 )
 async def aprobar_transaccion_v2(
@@ -101,12 +81,7 @@ async def aprobar_transaccion_v2(
     current_user = Depends(require_aprobador_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Validación JWT real
-    - ✅ Registro del aprobador con user_id
-    """
-    user_id = current_user.user_id  # ap-001, ap-002, etc.
+    user_id = current_user.user_id 
     user_role = current_user.role.value
     
     transaction = TransactionService.aprobar_transaccion(db, transaction_id, user_id, user_role)
@@ -121,7 +96,7 @@ async def aprobar_transaccion_v2(
 @api_router.post(
     "/transactions/{transaction_id}/reject",
     response_model=MessageResponse,
-    summary="🔐 Rechazar transacción (v2 - JWT)",
+    summary="Rechazar transacción (v2 - JWT)",
     description="Rechaza una transacción con autenticación JWT."
 )
 async def rechazar_transaccion_v2(
@@ -129,11 +104,6 @@ async def rechazar_transaccion_v2(
     current_user = Depends(require_aprobador_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Validación JWT real
-    - ✅ Registro del rechazador
-    """
     user_role = current_user.role.value
     transaction = TransactionService.rechazar_transaccion(db, transaction_id, user_role)
     
@@ -147,19 +117,14 @@ async def rechazar_transaccion_v2(
 @api_router.post(
     "/transactions/{transaction_id}/execute",
     response_model=MessageResponse,
-    summary="🔐 Ejecutar transacción (v2 - JWT)",
+    summary="Ejecutar transacción (v2 - JWT)",
     description="Ejecuta una transacción aprobada (simulado)."
 )
 async def ejecutar_transaccion_v2(
     transaction_id: str,
-    current_user = Depends(get_current_user_v2),  # Cualquier usuario autenticado
+    current_user = Depends(get_current_user_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Requiere autenticación (cualquier rol)
-    - ✅ Registro de quien ejecutó
-    """
     transaction = TransactionService.ejecutar_transaccion(db, transaction_id)
     
     return MessageResponse(
@@ -172,7 +137,7 @@ async def ejecutar_transaccion_v2(
 @api_router.get(
     "/transactions/{transaction_id}",
     response_model=TransactionResponse,
-    summary="🔐 Consultar transacción (v2 - JWT)",
+    summary="Consultar transacción (v2 - JWT)",
     description="Obtiene los detalles de una transacción (requiere autenticación)."
 )
 async def consultar_transaccion_v2(
@@ -180,10 +145,6 @@ async def consultar_transaccion_v2(
     current_user = Depends(get_current_user_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Requiere autenticación
-    """
     transaction = crud_transaction.obtener_transaccion_por_id(db, transaction_id)
     
     if not transaction:
@@ -198,7 +159,7 @@ async def consultar_transaccion_v2(
 @api_router.get(
     "/transactions",
     response_model=list[TransactionResponse],
-    summary="🔐 Listar transacciones (v2 - JWT)",
+    summary="Listar transacciones (v2 - JWT)",
     description="Lista transacciones del usuario autenticado."
 )
 async def listar_transacciones_v2(
@@ -207,13 +168,8 @@ async def listar_transacciones_v2(
     current_user = Depends(get_current_user_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    ## Mejoras v2:
-    - ✅ Filtra solo las transacciones del usuario (si es OPERADOR)
-    - ✅ El APROBADOR ve todas las pendientes de aprobación
-    """
     if current_user.role.value == "OPERADOR":
-        # OPERADOR solo ve sus transacciones (filtradas por user_id: op-001, op-002, etc.)
+        # OPERADOR solo ve sus transacciones 
         transactions = db.query(crud_transaction.Transaction).filter(
             crud_transaction.Transaction.created_by == current_user.user_id
         ).offset(skip).limit(limit).all()
@@ -226,17 +182,13 @@ async def listar_transacciones_v2(
 
 @api_router.get(
     "/transactions/next-reference/preview",
-    summary="📋 Ver próxima referencia",
+    summary="Ver próxima referencia",
     description="Muestra cuál será la próxima referencia que se generará."
 )
 async def preview_next_reference(
     current_user = Depends(get_current_user_v2),
     db: Session = Depends(get_db)
 ):
-    """
-    Endpoint útil para que el frontend muestre al usuario 
-    cuál será la referencia de la siguiente transacción.
-    """
     next_ref = ReferenceService.generar_siguiente_reference(db)
     ultima_ref = ReferenceService.obtener_ultima_reference(db)
     

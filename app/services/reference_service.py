@@ -1,7 +1,3 @@
-"""
-Servicio para generar referencias de transacciones de forma consecutiva.
-Formato: TRX-0001, TRX-0002, TRX-0003, etc.
-"""
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from models.transaction import Transaction
@@ -9,28 +5,12 @@ import re
 
 
 class ReferenceService:
-    """Servicio para generar referencias consecutivas de transacciones"""
-    
     PREFIX = "TRX"
     DIGITS = 3  # Número de dígitos (001, 002, etc.)
     
     @staticmethod
     def generar_siguiente_reference(db: Session) -> str:
-        """
-        Genera la siguiente referencia consecutiva.
-        
-        Args:
-            db: Sesión de base de datos
-        
-        Returns:
-            str: Referencia en formato TRX-001, TRX-002, etc.
-        
-        Example:
-            >>> generar_siguiente_reference(db)
-            'TRX-001'  # Si es la primera
-            'TRX-042'  # Si ya hay 41 transacciones
-        """
-        # Obtener la última transacción con reference que siga el patrón TRX-XXXX
+        # Obtener la última transacción
         ultima_transaccion = (
             db.query(Transaction)
             .filter(Transaction.reference.like(f"{ReferenceService.PREFIX}-%"))
@@ -60,15 +40,6 @@ class ReferenceService:
     
     @staticmethod
     def obtener_ultima_reference(db: Session) -> str:
-        """
-        Obtiene la última referencia generada.
-        
-        Args:
-            db: Sesión de base de datos
-        
-        Returns:
-            str: Última referencia o None si no hay transacciones
-        """
         ultima_transaccion = (
             db.query(Transaction)
             .filter(Transaction.reference.like(f"{ReferenceService.PREFIX}-%"))
@@ -80,20 +51,5 @@ class ReferenceService:
     
     @staticmethod
     def validar_reference_format(reference: str) -> bool:
-        """
-        Valida que una referencia tenga el formato correcto.
-        
-        Args:
-            reference: Referencia a validar
-        
-        Returns:
-            bool: True si es válida, False si no
-        
-        Example:
-            >>> validar_reference_format("TRX-001")
-            True
-            >>> validar_reference_format("INVALID")
-            False
-        """
         pattern = f"^{ReferenceService.PREFIX}-\\d{{{ReferenceService.DIGITS}}}$"
         return bool(re.match(pattern, reference))

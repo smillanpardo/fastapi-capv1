@@ -7,13 +7,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def crear_token(sub: str, role: str):
-    """
-    Crea un token JWT con el email del usuario y su rol.
-    
-    Args:
-        sub: Email del usuario
-        role: Rol del usuario (OPERADOR o APROBADOR)
-    """
     expire = datetime.utcnow() + timedelta(minutes=setting.ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
         "sub": sub,

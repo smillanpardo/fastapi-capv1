@@ -322,25 +322,20 @@ async def rechazar_transaccion(
         }
     }
 )
+
+# Ejecuta transacciones en estado APPROVED
 async def ejecutar_transaccion(
     transaction_id: str,
     db: Session = Depends(get_db)
 ):
-    """
-    ## Reglas:
-    - Solo transacciones en estado **APPROVED** pueden ejecutarse
-    - Al ejecutar, el estado cambia a **EXECUTED**
-    - La ejecución es **simulada** (sin integración externa)
-    - No requiere autenticación específica
-    """
     transaction = TransactionService.ejecutar_transaccion(db, transaction_id)
     return MessageResponse(
-        message="Transacción ejecutada exitosamente (simulado)",
+        message="Transacción ejecutada exitosamente",
         transaction_id=transaction.transaction_id,
         status=transaction.status
     )
 
-
+# Retorna toda la información de una transacción específica.
 @api_router.get(
     "/transactions/{transaction_id}",
     response_model=TransactionResponse,
@@ -351,12 +346,6 @@ async def consultar_transaccion(
     transaction_id: str,
     db: Session = Depends(get_db)
 ):
-    """
-    ## Descripción:
-    Retorna toda la información de una transacción específica.
-    
-    No requiere autenticación para la consulta.
-    """
     transaction = crud_transaction.obtener_transaccion_por_id(db, transaction_id)
     
     if not transaction:
@@ -368,21 +357,16 @@ async def consultar_transaccion(
     return transaction
 
 
-# Endpoint adicional: Listar todas las transacciones (útil para testing)
+# Endpoint adicional: Listar todas las transacciones
 @api_router.get(
     "/transactions",
     response_model=list[TransactionResponse],
     summary="Listar transacciones",
-    description="Lista todas las transacciones (endpoint adicional para testing)."
+    description="Lista todas las transacciones."
 )
 async def listar_transacciones(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    """
-    ## Descripción:
-    Endpoint adicional para listar todas las transacciones con paginación.
-    Útil para pruebas y desarrollo.
-    """
     return crud_transaction.obtener_todas_transacciones(db, skip=skip, limit=limit)
