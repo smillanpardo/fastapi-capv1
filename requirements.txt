@@ -6,10 +6,12 @@ uvicorn[standard]==0.24.0
 sqlalchemy==2.0.23
 psycopg2-binary==2.9.9
 
-# Autenticación y seguridad
-python-jose[cryptography]==3.3.0
+# Autenticación y seguridad (sin cryptography para evitar compilación de Rust)
+python-jose==3.3.0
+cryptography==41.0.7
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
+bcrypt==4.1.2
 
 # Validación y configuración
 pydantic==2.5.0
