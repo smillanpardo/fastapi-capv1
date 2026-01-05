@@ -8,14 +8,13 @@ app = FastAPI(
     description="""
     ## API REST para flujo de autorización de transacciones financieras
     
-    ### 📌 v1 - Versión Base (Prueba Técnica)
+    ### v1 - Versión Base (Prueba Técnica)
     - Autenticación por headers simples (X-User-Role, X-User-Id)
     - Reference manual
-    - Cumple 100% con requisitos de la prueba técnica
     
-    ### 🚀 v2 - Versión Empresarial (Valor Agregado)
+    ### v2 - Versión Empresarial (Valor Agregado)
     - Autenticación JWT real validando contra BD
-    - Reference autogenerado consecutivo (TRX-001, TRX-002, etc.)
+    - Reference autogenerado consecutivo
     - Validación de usuarios con roles en BD
     """,
     version="2.0.0"
