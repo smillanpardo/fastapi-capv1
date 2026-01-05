@@ -243,3 +243,13 @@ http://localhost:8000/docs
 ## Realizado
 
 ### Santiago Millan
+
+## Notas
+
+testO@example.com (operador)
+testo1@example.com (operador)
+adan@covalto.com (APROBADOR) - ap-001
+dbonansea@covalto.com (APROBADOR) - ap-002
+querys
+select _ from transactions
+select _ from usuarios
